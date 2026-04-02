@@ -8,8 +8,7 @@ import type {
   Shop, 
   CartItem, 
   SearchFilters,
-  Booking,
-  Order
+  Booking
 } from '@/types';
 
 // Auth Store
@@ -30,7 +29,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       
-      login: async (email, password) => {
+      login: async (email, _password) => {
         set({ isLoading: true });
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -55,7 +54,7 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, isAuthenticated: false });
       },
       
-      register: async (name, email, phone, password) => {
+      register: async (name, email, phone, _password) => {
         set({ isLoading: true });
         await new Promise(resolve => setTimeout(resolve, 1000));
         

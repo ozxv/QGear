@@ -24,13 +24,13 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export function ServicesSection() {
-  const { setService, setCurrentModal } = useBookingStore();
-  const { setCurrentModal: setUIModal } = useUIStore();
+  const { setService } = useBookingStore();
+  const { setCurrentModal } = useUIStore();
 
   const handleBookService = (service: typeof services[0]) => {
-    setService(service);
-    setUIModal('booking');
-  };
+  setService(service);
+  setCurrentModal('booking');
+};
 
   return (
     <section id="services" className="section-padding relative overflow-hidden bg-[#0A0A0A]">
