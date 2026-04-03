@@ -47,11 +47,17 @@ export function Navbar() {
   }, []);
 
   const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  // إذا مش في الصفحة الرئيسية
+  if (window.location.pathname !== '/') {
+    window.location.href = '/' + href;
+    return;
+  }
+
+  const element = document.querySelector(href);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
+};
 
   return (
     <motion.header

@@ -6,7 +6,9 @@ import type {
   Review,
   CampingProduct 
 } from '@/types';
-
+import oilFilterImg from '@/assets/oil-filter.jpg';
+import batteryImg from '@/assets/battery.jpg';
+import brakePadImg from '@/assets/brake-pad.jpg';
 // Car Brands & Models
 export const carBrands = [
   { id: 'toyota', name: 'تويوتا', nameEn: 'Toyota', logo: '/brands/toyota.png' },
@@ -80,7 +82,7 @@ export const categories: Category[] = [
     name: 'نظام الفرامل',
     nameEn: 'Brake System',
     description: 'فحمات، أقراص، كليبرات وكل ما يخص الفرامل',
-    image: '/categories/brakes.jpg',
+    image: '/categories/brake.jpg',
     icon: 'CircleDot',
     subcategories: [
       { id: 'pads', name: 'فحمات', nameEn: 'Brake Pads', productCount: 280 },
@@ -451,7 +453,7 @@ export const products: Product[] = [
     description: 'فحمات فرامل أمامية أصلية عالية الجودة',
     price: 280,
     originalPrice: 350,
-    images: ['/products/brake-pads-1.jpg'],
+    images: [brakePadImg],
     category: 'brakes',
     subcategory: 'pads',
     brand: 'Brembo',
@@ -479,8 +481,8 @@ export const products: Product[] = [
     nameEn: 'Oil Filter',
     description: 'فلتر زيت أصلي للمحرك',
     price: 45,
-    images: ['/products/oil-filter-1.jpg'],
-    category: 'engine',
+ images: [oilFilterImg],
+ category: 'engine',
     subcategory: 'filters',
     brand: 'Toyota',
     compatibility: [
@@ -507,7 +509,7 @@ export const products: Product[] = [
     description: 'بطارية 12V 70AH مع ضمان سنة',
     price: 450,
     originalPrice: 520,
-    images: ['/products/battery-1.jpg'],
+    images: [batteryImg],
     category: 'electrical',
     subcategory: 'batteries',
     brand: 'Varta',

@@ -10,9 +10,10 @@ import {
   Star,
   MapPin
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { services } from '@/data/mock';
-import { useBookingStore, useUIStore } from '@/store';
+import { useBookingStore } from '@/store';
 
 const iconMap: Record<string, React.ElementType> = {
   diagnostic: ClipboardCheck,
@@ -25,20 +26,20 @@ const iconMap: Record<string, React.ElementType> = {
 
 export function ServicesSection() {
   const { setService } = useBookingStore();
-  const { setCurrentModal } = useUIStore();
+  const navigate = useNavigate();
 
   const handleBookService = (service: typeof services[0]) => {
-  setService(service);
-  setCurrentModal('booking');
-};
+    setService(service);
+    navigate('/garage/1');
+    // لاحقًا نخليها:
+    // navigate(`/garage/${service.shop.id}`);
+  };
 
   return (
     <section id="services" className="section-padding relative overflow-hidden bg-[#0A0A0A]">
-      {/* Background Pattern */}
       <div className="absolute inset-0 grid-pattern opacity-30" />
       
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,7 +57,6 @@ export function ServicesSection() {
           </p>
         </motion.div>
 
-        {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => {
             const Icon = iconMap[service.category] || Wrench;
@@ -70,7 +70,6 @@ export function ServicesSection() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <div className="group h-full bg-gradient-to-br from-[#1F1F1F] to-[#0A0A0A] border border-white/10 rounded-lg p-6 hover:border-[#DC2626]/50 transition-all card-hover">
-                  {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-14 h-14 rounded-xl bg-[#DC2626]/10 border border-[#DC2626]/30 flex items-center justify-center group-hover:bg-[#DC2626]/20 group-hover:scale-110 transition-all">
                       <Icon className="w-7 h-7 text-[#DC2626]" />
@@ -81,7 +80,6 @@ export function ServicesSection() {
                     </div>
                   </div>
 
-                  {/* Content */}
                   <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#DC2626] transition-colors">
                     {service.name}
                   </h3>
@@ -90,7 +88,6 @@ export function ServicesSection() {
                     {service.description}
                   </p>
 
-                  {/* Details */}
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2 text-sm text-white/60">
                       <Clock className="w-4 h-4 text-[#DC2626]" />
@@ -102,7 +99,6 @@ export function ServicesSection() {
                     </div>
                   </div>
 
-                  {/* Price & Action */}
                   <div className="flex items-center justify-between pt-4 border-t border-white/10">
                     <div>
                       <span className="text-xs text-white/40">السعر</span>
@@ -125,7 +121,6 @@ export function ServicesSection() {
           })}
         </div>
 
-        {/* View All Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { products } from '@/data/mock';
 import { useCartStore, useFavoritesStore } from '@/store';
+import { useNavigate } from 'react-router-dom';
 
 export function FeaturedProductsSection() {
   const { addToCart } = useCartStore();
   const { toggleProduct, isProductFavorite } = useFavoritesStore();
-
+  const navigate = useNavigate();
   const featuredProducts = products.slice(0, 8);
 
   return (
@@ -68,12 +69,13 @@ export function FeaturedProductsSection() {
                     {/* Overlay */}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <Button
-                        size="icon"
-                        variant="secondary"
-                        className="w-10 h-10 bg-white/10 backdrop-blur-sm hover:bg-[#DC2626]"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
+  size="icon"
+  variant="secondary"
+  className="w-10 h-10 bg-white/10 backdrop-blur-sm hover:bg-[#DC2626]"
+  onClick={() => navigate(`/product/${product.id}`)}
+>
+  <Eye className="w-4 h-4" />
+</Button>
                       <Button
                         size="icon"
                         variant="secondary"
