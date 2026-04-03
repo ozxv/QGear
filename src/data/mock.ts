@@ -6,9 +6,9 @@ import type {
   Review,
   CampingProduct 
 } from '@/types';
-import oilFilterImg from '@/assets/oil-filter.jpg';
-import batteryImg from '@/assets/battery.jpg';
-import brakePadImg from '@/assets/brake-pad.jpg';
+import oilFilterImg from '../assets/oil-filter.jpg';
+import batteryImg from '../assets/battery.jpg';
+import brakePadImg from '../assets/brake-pad.jpg';
 // Car Brands & Models
 export const carBrands = [
   { id: 'toyota', name: 'تويوتا', nameEn: 'Toyota', logo: '/brands/toyota.png' },
