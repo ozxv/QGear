@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { 
-  Wrench, 
-  Calendar, 
-  Settings, 
-  ClipboardCheck, 
+import {
+  Wrench,
+  Calendar,
+  Settings,
+  ClipboardCheck,
   Gauge,
   ArrowLeft,
   Clock,
@@ -11,6 +11,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { services } from '@/data/mock';
 import { useBookingStore } from '@/store';
@@ -25,20 +26,21 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export function ServicesSection() {
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+
   const { setService } = useBookingStore();
   const navigate = useNavigate();
 
   const handleBookService = (service: typeof services[0]) => {
     setService(service);
     navigate('/garage/1');
-    // لاحقًا نخليها:
-    // navigate(`/garage/${service.shop.id}`);
   };
 
   return (
     <section id="services" className="section-padding relative overflow-hidden bg-[#0A0A0A]">
       <div className="absolute inset-0 grid-pattern opacity-30" />
-      
+
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -47,20 +49,35 @@ export function ServicesSection() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-2 bg-[#DC2626]/10 border border-[#DC2626]/30 rounded-lg text-[#DC2626] text-sm font-medium mb-4">
-            خدماتنا
+            {t('servicesBadge')}
           </span>
+
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-            خدمات <span className="text-[#DC2626]">الصيانة</span>
+            {t('servicesTitle')}{' '}
+            <span className="text-[#DC2626]">{t('servicesHighlight')}</span>
           </h2>
+
           <p className="text-white/60 max-w-2xl mx-auto">
-            احجز خدمات الصيانة والفحص مع أفضل المراكز في قطر
+            {t('servicesSubtitle')}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => {
             const Icon = iconMap[service.category] || Wrench;
-            
+
+            const serviceName = isArabic
+              ? service.name
+              : service.nameEn || service.name;
+
+            const serviceDescription = isArabic
+              ? service.description
+              : service.descriptionEn || service.description;
+
+            const shopName = isArabic
+              ? service.shop.name
+              : service.shop.nameEn || service.shop.name;
+
             return (
               <motion.div
                 key={service.id}
@@ -74,6 +91,7 @@ export function ServicesSection() {
                     <div className="w-14 h-14 rounded-xl bg-[#DC2626]/10 border border-[#DC2626]/30 flex items-center justify-center group-hover:bg-[#DC2626]/20 group-hover:scale-110 transition-all">
                       <Icon className="w-7 h-7 text-[#DC2626]" />
                     </div>
+
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       <span className="text-sm text-white/80">{service.rating}</span>
@@ -81,11 +99,11 @@ export function ServicesSection() {
                   </div>
 
                   <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#DC2626] transition-colors">
-                    {service.name}
+                    {serviceName}
                   </h3>
-                  
+
                   <p className="text-white/60 text-sm mb-4 line-clamp-2">
-                    {service.description}
+                    {serviceDescription}
                   </p>
 
                   <div className="space-y-2 mb-6">
@@ -93,26 +111,28 @@ export function ServicesSection() {
                       <Clock className="w-4 h-4 text-[#DC2626]" />
                       <span>{service.duration}</span>
                     </div>
+
                     <div className="flex items-center gap-2 text-sm text-white/60">
                       <MapPin className="w-4 h-4 text-[#DC2626]" />
-                      <span>{service.shop.name}</span>
+                      <span>{shopName}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-white/10">
                     <div>
-                      <span className="text-xs text-white/40">السعر</span>
+                      <span className="text-xs text-white/40">{t('price')}</span>
                       <p className="text-lg font-bold text-[#DC2626]">
-                        {service.priceType === 'starting_from' ? 'يبدأ من ' : ''}
-                        {service.price} ر.ق
+                        {service.priceType === 'starting_from' ? `${t('startsFrom')} ` : ''}
+                        {service.price} {t('currencyQAR')}
                       </p>
                     </div>
+
                     <Button
                       onClick={() => handleBookService(service)}
                       className="btn-primary"
                     >
                       <Calendar className="w-4 h-4 mr-2" />
-                      احجز الآن
+                      {t('bookNow')}
                     </Button>
                   </div>
                 </div>
@@ -132,7 +152,7 @@ export function ServicesSection() {
             size="lg"
             className="border-[#DC2626] text-[#DC2626] hover:bg-[#DC2626] hover:text-white"
           >
-            عرض جميع الخدمات
+            {t('viewAllServices')}
             <ArrowLeft className="w-4 h-4 mr-2" />
           </Button>
         </motion.div>

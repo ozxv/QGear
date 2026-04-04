@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Car, Wrench, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,27 +12,106 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { carBrands, carModels, carYears, commonProblems } from '@/data/mock';
+import {
+  carBrands,
+  carModels,
+  carYears,
+  commonProblems,
+  products,
+  searchSynonyms,
+} from '@/data/mock';
 import { useSearchStore, useCarStore } from '@/store';
 
 export function SearchSection() {
   const [searchType, setSearchType] = useState<'product' | 'problem' | 'service'>('product');
   const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const { setFilters, search } = useSearchStore();
-  const { selectedCar } = useCarStore();
 
-  const handleSearch = async () => {
-    setFilters({ 
+  const { t, i18n } = useTranslation();
+  const { setFilters } = useSearchStore();
+  const { selectedCar } = useCarStore();
+  const navigate = useNavigate();
+
+  const isArabic = i18n.language === 'ar';
+
+  const normalizeText = (text: string) => text.trim().toLowerCase();
+
+  const findMatchingProduct = (query: string) => {
+    const normalizedQuery = normalizeText(query);
+
+    if (!normalizedQuery) return null;
+
+    const matchedByName = products.find((product) => {
+      const name = normalizeText(product.name);
+      const nameEn = normalizeText(product.nameEn || '');
+      const description = normalizeText(product.description || '');
+      const tags = (product.tags || []).map((tag) => normalizeText(tag));
+
+      return (
+        name.includes(normalizedQuery) ||
+        nameEn.includes(normalizedQuery) ||
+        description.includes(normalizedQuery) ||
+        tags.some((tag) => tag.includes(normalizedQuery))
+      );
+    });
+
+    if (matchedByName) return matchedByName;
+
+    const synonymEntry = Object.entries(searchSynonyms).find(([key, synonyms]) => {
+      const normalizedKey = normalizeText(key);
+      const normalizedSynonyms = synonyms.map((item) => normalizeText(item));
+
+      return (
+        normalizedKey.includes(normalizedQuery) ||
+        normalizedSynonyms.some((item) => item.includes(normalizedQuery)) ||
+        normalizedSynonyms.some((item) => normalizedQuery.includes(item))
+      );
+    });
+
+    if (synonymEntry) {
+      const [matchedKeyword] = synonymEntry;
+
+      const matchedBySynonym = products.find((product) => {
+        const name = normalizeText(product.name);
+        const nameEn = normalizeText(product.nameEn || '');
+        const description = normalizeText(product.description || '');
+        const tags = (product.tags || []).map((tag) => normalizeText(tag));
+
+        return (
+          name.includes(normalizeText(matchedKeyword)) ||
+          nameEn.includes(normalizeText(matchedKeyword)) ||
+          description.includes(normalizeText(matchedKeyword)) ||
+          tags.some((tag) => tag.includes(normalizeText(matchedKeyword)))
+        );
+      });
+
+      if (matchedBySynonym) return matchedBySynonym;
+    }
+
+    return null;
+  };
+
+  const handleSearch = () => {
+    setFilters({
       query: searchQuery,
       brand: selectedBrand,
     });
-    await search(searchQuery);
+
+    const matchedProduct = findMatchingProduct(searchQuery);
+
+    if (matchedProduct) {
+      navigate(`/product/${matchedProduct.id}`);
+      return;
+    }
+
+    alert(t('searchNoResults'));
   };
 
   const handleProblemClick = (problem: string) => {
     setSearchQuery(problem);
-    setSearchType('service');
+    setSearchType('product');
   };
 
   return (
@@ -54,8 +135,9 @@ export function SearchSection() {
               }`}
             >
               <Search className="w-4 h-4 inline-block ml-2" />
-              بحث عن منتج
+              {t('searchProductTab')}
             </button>
+
             <button
               onClick={() => setSearchType('problem')}
               className={`px-6 py-3 text-sm font-medium transition-all ${
@@ -65,8 +147,9 @@ export function SearchSection() {
               }`}
             >
               <AlertCircle className="w-4 h-4 inline-block ml-2" />
-              عندك مشكلة؟
+              {t('haveProblemTab')}
             </button>
+
             <button
               onClick={() => setSearchType('service')}
               className={`px-6 py-3 text-sm font-medium transition-all ${
@@ -76,7 +159,7 @@ export function SearchSection() {
               }`}
             >
               <Wrench className="w-4 h-4 inline-block ml-2" />
-              خدمات
+              {t('servicesTab')}
             </button>
           </div>
         </div>
@@ -90,43 +173,54 @@ export function SearchSection() {
                   <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                   <Input
                     type="text"
-                    placeholder="ابحث عن قطع الغيار..."
+                    placeholder={t('searchPartsPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="input-dark pr-12 text-right"
                   />
                 </div>
               </div>
-              
-              <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+
+              <Select
+                value={selectedBrand}
+                onValueChange={(value) => {
+                  setSelectedBrand(value);
+                  setSelectedModel('');
+                }}
+              >
                 <SelectTrigger className="input-dark text-right">
-                  <SelectValue placeholder="الماركة" />
+                  <SelectValue placeholder={t('brandPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1F1F1F] border-white/10">
                   {carBrands.map((brand) => (
                     <SelectItem key={brand.id} value={brand.id} className="text-right">
-                      {brand.name}
+                      {isArabic ? brand.name : brand.nameEn}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              <Select disabled={!selectedBrand}>
+              <Select
+                value={selectedModel}
+                onValueChange={setSelectedModel}
+                disabled={!selectedBrand}
+              >
                 <SelectTrigger className="input-dark text-right">
-                  <SelectValue placeholder="الموديل" />
+                  <SelectValue placeholder={t('modelPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1F1F1F] border-white/10">
-                  {selectedBrand && carModels[selectedBrand]?.map((model) => (
-                    <SelectItem key={model} value={model} className="text-right">
-                      {model}
-                    </SelectItem>
-                  ))}
+                  {selectedBrand &&
+                    carModels[selectedBrand]?.map((model) => (
+                      <SelectItem key={model} value={model} className="text-right">
+                        {model}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
 
-              <Select>
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
                 <SelectTrigger className="input-dark text-right">
-                  <SelectValue placeholder="السنة" />
+                  <SelectValue placeholder={t('yearPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1F1F1F] border-white/10 max-h-48">
                   {carYears.map((year) => (
@@ -142,8 +236,9 @@ export function SearchSection() {
           {searchType === 'problem' && (
             <div className="space-y-4">
               <p className="text-white/60 text-center mb-4">
-                اختر المشكلة التي تواجهك وسنوجهك للحل المناسب
+                {t('problemHelpText')}
               </p>
+
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                 {commonProblems.map((problem) => (
                   <button
@@ -166,33 +261,51 @@ export function SearchSection() {
                   <Wrench className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                   <Input
                     type="text"
-                    placeholder="ابحث عن خدمة..."
+                    placeholder={t('searchServicePlaceholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="input-dark pr-12 text-right"
                   />
                 </div>
               </div>
-              
+
               <Select>
                 <SelectTrigger className="input-dark text-right">
-                  <SelectValue placeholder="نوع الخدمة" />
+                  <SelectValue placeholder={t('serviceTypePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1F1F1F] border-white/10">
-                  <SelectItem value="diagnostic" className="text-right">فحص وتشخيص</SelectItem>
-                  <SelectItem value="maintenance" className="text-right">صيانة دورية</SelectItem>
-                  <SelectItem value="repair" className="text-right">إصلاح</SelectItem>
-                  <SelectItem value="installation" className="text-right">تركيب</SelectItem>
+                  <SelectItem value="diagnostic" className="text-right">
+                    {t('diagnosticService')}
+                  </SelectItem>
+                  <SelectItem value="maintenance" className="text-right">
+                    {t('maintenanceService')}
+                  </SelectItem>
+                  <SelectItem value="repair" className="text-right">
+                    {t('repairService')}
+                  </SelectItem>
+                  <SelectItem value="installation" className="text-right">
+                    {t('installationService')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
               <Select>
                 <SelectTrigger className="input-dark text-right">
-                  <SelectValue placeholder="المنطقة" />
+                  <SelectValue placeholder={t('regionPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1F1F1F] border-white/10">
-                  <SelectItem value="doha" className="text-right">الدوحة</SelectItem>
-                  <SelectItem value="westbay" className="text-right">الخليج الغربي</SelectItem>
-                  <SelectItem value="alkhor" className="text-right">الخور</SelectItem>
-                  <SelectItem value="wakra" className="text-right">الوكرة</SelectItem>
+                  <SelectItem value="doha" className="text-right">
+                    {t('regionDoha')}
+                  </SelectItem>
+                  <SelectItem value="westbay" className="text-right">
+                    {t('regionWestBay')}
+                  </SelectItem>
+                  <SelectItem value="alkhor" className="text-right">
+                    {t('regionAlKhor')}
+                  </SelectItem>
+                  <SelectItem value="wakra" className="text-right">
+                    {t('regionWakra')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -200,13 +313,9 @@ export function SearchSection() {
 
           {/* Search Button */}
           <div className="mt-4 flex justify-center">
-            <Button
-              size="lg"
-              className="btn-primary px-12"
-              onClick={handleSearch}
-            >
+            <Button size="lg" className="btn-primary px-12" onClick={handleSearch}>
               <Search className="w-5 h-5 mr-2" />
-              بحث
+              {t('search')}
             </Button>
           </div>
         </div>
@@ -221,7 +330,7 @@ export function SearchSection() {
             <div className="flex items-center gap-2 px-4 py-2 bg-[#DC2626]/10 border border-[#DC2626]/30 rounded-lg">
               <Car className="w-4 h-4 text-[#DC2626]" />
               <span className="text-sm text-white/80">
-                السيارة المختارة: {selectedCar.brand} {selectedCar.model} {selectedCar.year}
+                {t('selectedCarLabel')}: {selectedCar.brand} {selectedCar.model} {selectedCar.year}
               </span>
             </div>
           </motion.div>

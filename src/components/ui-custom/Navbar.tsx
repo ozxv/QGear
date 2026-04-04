@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Menu, 
-  Search, 
-  ShoppingCart, 
-  User, 
-  Heart, 
+import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
+import {
+  Menu,
+  Search,
+  ShoppingCart,
+  User,
+  Heart,
   Car,
   ChevronDown,
   LogOut,
-  Settings
+  Settings,
+  Languages,
 } from 'lucide-react';
 import { useAuthStore, useCartStore, useUIStore, useCarStore } from '@/store';
 import { Button } from '@/components/ui/button';
@@ -22,20 +25,42 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const navLinks = [
-  { name: 'الرئيسية', href: '#hero' },
-  { name: 'المتجر', href: '#categories' },
-  { name: 'الخدمات', href: '#services' },
-  { name: 'البحث', href: '#search' },
-  { name: 'تواصل معنا', href: '#footer' },
+  { key: 'home', href: '#hero' },
+  { key: 'store', href: '#categories' },
+  { key: 'services', href: '#services' },
+  { key: 'searchNav', href: '#search' },
+  { key: 'contact', href: '#footer' },
 ];
 
 export function Navbar() {
+  const { t, i18n } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const { isAuthenticated, user, logout } = useAuthStore();
   const { getTotalItems } = useCartStore();
   const { toggleMobileMenu, toggleCart, toggleLoginModal, setCurrentModal } = useUIStore();
   const { selectedCar } = useCarStore();
   const cartItemsCount = getTotalItems();
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar');
+  };
+
+  useEffect(() => {
+    document.documentElement.lang = i18n.language;
+    document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
+
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      document.documentElement.lang = lng;
+      document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,17 +72,16 @@ export function Navbar() {
   }, []);
 
   const scrollToSection = (href: string) => {
-  // إذا مش في الصفحة الرئيسية
-  if (window.location.pathname !== '/') {
-    window.location.href = '/' + href;
-    return;
-  }
+    if (window.location.pathname !== '/') {
+      window.location.href = '/' + href;
+      return;
+    }
 
-  const element = document.querySelector(href);
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' });
-  }
-};
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <motion.header
@@ -65,17 +89,19 @@ export function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, delay: 0.2 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5' 
+        isScrolled
+          ? 'bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-white/5'
           : 'bg-transparent'
       }`}
     >
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <motion.a 
+          <motion.a
             href="#hero"
-            onClick={(e) => { e.preventDefault(); scrollToSection('#hero'); }}
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToSection('#hero');
+            }}
             className="flex items-center gap-2 group"
             whileHover={{ scale: 1.02 }}
           >
@@ -83,25 +109,25 @@ export function Navbar() {
               <div className="absolute inset-0 bg-gradient-to-br from-[#DC2626] to-[#B91C1C] rounded-lg transform rotate-45 group-hover:rotate-90 transition-transform duration-500" />
               <span className="relative text-white font-bold text-lg">Q</span>
             </div>
-            <span className="text-2xl font-bold text-white tracking-wider">
-              GEAR
-            </span>
+            <span className="text-2xl font-bold text-white tracking-wider">GEAR</span>
           </motion.a>
 
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link, index) => (
               <motion.a
-                key={link.name}
+                key={link.key}
                 href={link.href}
-                onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection(link.href);
+                }}
                 className="relative text-white/80 hover:text-white transition-colors py-2 text-sm font-medium"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + index * 0.1 }}
                 whileHover={{ y: -2 }}
               >
-                {link.name}
+                {t(link.key)}
                 <motion.span
                   className="absolute bottom-0 right-0 w-0 h-0.5 bg-[#DC2626]"
                   whileHover={{ width: '100%' }}
@@ -111,9 +137,19 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Right Section */}
           <div className="flex items-center gap-3">
-            {/* Selected Car */}
+            <Button
+              variant="ghost"
+              className="text-white/80 hover:text-white hover:bg-white/10 px-3"
+              onClick={toggleLanguage}
+              title={t('changeLanguage')}
+            >
+              <Languages className="w-5 h-5" />
+              <span className="ml-2 hidden sm:inline">
+                {i18n.language === 'ar' ? 'EN' : 'عربي'}
+              </span>
+            </Button>
+
             {selectedCar && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -127,7 +163,6 @@ export function Navbar() {
               </motion.div>
             )}
 
-            {/* Search Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -137,7 +172,6 @@ export function Navbar() {
               <Search className="w-5 h-5" />
             </Button>
 
-            {/* Favorites */}
             <Button
               variant="ghost"
               size="icon"
@@ -147,7 +181,6 @@ export function Navbar() {
               <Heart className="w-5 h-5" />
             </Button>
 
-            {/* Cart */}
             <Button
               variant="ghost"
               size="icon"
@@ -166,7 +199,6 @@ export function Navbar() {
               )}
             </Button>
 
-            {/* User Menu */}
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -181,26 +213,31 @@ export function Navbar() {
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
+
                 <DropdownMenuContent align="end" className="w-48 bg-[#1F1F1F] border-white/10">
                   <DropdownMenuItem className="text-white hover:bg-white/10 cursor-pointer">
                     <User className="w-4 h-4 ml-2" />
-                    الملف الشخصي
+                    {t('profile')}
                   </DropdownMenuItem>
+
                   <DropdownMenuItem className="text-white hover:bg-white/10 cursor-pointer">
                     <Car className="w-4 h-4 ml-2" />
-                    سياراتي
+                    {t('myCars')}
                   </DropdownMenuItem>
+
                   <DropdownMenuItem className="text-white hover:bg-white/10 cursor-pointer">
                     <Settings className="w-4 h-4 ml-2" />
-                    الإعدادات
+                    {t('settings')}
                   </DropdownMenuItem>
+
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem 
+
+                  <DropdownMenuItem
                     className="text-red-400 hover:bg-red-500/10 cursor-pointer"
                     onClick={logout}
                   >
                     <LogOut className="w-4 h-4 ml-2" />
-                    تسجيل الخروج
+                    {t('logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -210,11 +247,10 @@ export function Navbar() {
                 className="hidden sm:flex border-[#DC2626] text-[#DC2626] hover:bg-[#DC2626] hover:text-white"
                 onClick={toggleLoginModal}
               >
-                تسجيل الدخول
+                {t('login')}
               </Button>
             )}
 
-            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -227,15 +263,31 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <MobileMenu />
     </motion.header>
   );
 }
 
 function MobileMenu() {
+  const { t, i18n } = useTranslation();
   const { isMobileMenuOpen, toggleMobileMenu, setCurrentModal, toggleLoginModal } = useUIStore();
   const { isAuthenticated, logout } = useAuthStore();
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar');
+  };
+
+  const scrollToSection = (href: string) => {
+    if (window.location.pathname !== '/') {
+      window.location.href = '/' + href;
+      return;
+    }
+
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -249,19 +301,28 @@ function MobileMenu() {
           <div className="px-4 py-6 space-y-4">
             {navLinks.map((link) => (
               <a
-                key={link.name}
+                key={link.key}
                 href={link.href}
                 className="block text-white/80 hover:text-white py-2 text-lg"
                 onClick={(e) => {
                   e.preventDefault();
                   toggleMobileMenu();
-                  document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
+                  scrollToSection(link.href);
                 }}
               >
-                {link.name}
+                {t(link.key)}
               </a>
             ))}
-            
+
+            <Button
+              variant="outline"
+              className="w-full border-white/20 text-white hover:bg-white/10"
+              onClick={toggleLanguage}
+            >
+              <Languages className="w-4 h-4 ml-2" />
+              {i18n.language === 'ar' ? 'EN' : 'عربي'}
+            </Button>
+
             <div className="pt-4 border-t border-white/10 space-y-3">
               <Button
                 variant="outline"
@@ -272,9 +333,9 @@ function MobileMenu() {
                 }}
               >
                 <Search className="w-4 h-4 ml-2" />
-                البحث
+                {t('search')}
               </Button>
-              
+
               {isAuthenticated ? (
                 <Button
                   variant="destructive"
@@ -285,7 +346,7 @@ function MobileMenu() {
                   }}
                 >
                   <LogOut className="w-4 h-4 ml-2" />
-                  تسجيل الخروج
+                  {t('logout')}
                 </Button>
               ) : (
                 <Button
@@ -296,7 +357,7 @@ function MobileMenu() {
                   }}
                 >
                   <User className="w-4 h-4 ml-2" />
-                  تسجيل الدخول
+                  {t('login')}
                 </Button>
               )}
             </div>

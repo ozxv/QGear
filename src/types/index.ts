@@ -30,6 +30,7 @@ export interface Product {
   name: string;
   nameEn?: string;
   description: string;
+  descriptionEn?: string;
   price: number;
   originalPrice?: number;
   images: string[];
@@ -63,7 +64,9 @@ export interface CarCompatibility {
 export interface Service {
   id: string;
   name: string;
+  nameEn?: string;
   description: string;
+  descriptionEn?: string;
   price: number;
   priceType: 'fixed' | 'starting_from';
   duration: string;
@@ -89,6 +92,7 @@ export interface Shop {
   name: string;
   nameEn?: string;
   description: string;
+  descriptionEn?: string;
   logo: string;
   coverImage?: string;
   address: string;
@@ -144,7 +148,7 @@ export interface OrderItem {
   price: number;
 }
 
-export type OrderStatus = 
+export type OrderStatus =
   | 'new'
   | 'pending_confirmation'
   | 'confirmed'
@@ -176,7 +180,7 @@ export interface Booking {
   updatedAt: Date;
 }
 
-export type BookingStatus = 
+export type BookingStatus =
   | 'new'
   | 'pending_confirmation'
   | 'confirmed'
@@ -219,6 +223,7 @@ export interface Category {
   name: string;
   nameEn: string;
   description: string;
+  descriptionEn?: string;
   image: string;
   icon: string;
   subcategories: Subcategory[];
@@ -285,7 +290,9 @@ export interface DashboardStats {
 export interface CampingProduct {
   id: string;
   name: string;
+  nameEn?: string;
   description: string;
+  descriptionEn?: string;
   price: number;
   images: string[];
   category: string;
