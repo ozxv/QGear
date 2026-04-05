@@ -47,12 +47,14 @@ export function SearchSection() {
       const name = normalizeText(product.name);
       const nameEn = normalizeText(product.nameEn || '');
       const description = normalizeText(product.description || '');
+      const descriptionEn = normalizeText(product.descriptionEn || '');
       const tags = (product.tags || []).map((tag) => normalizeText(tag));
 
       return (
         name.includes(normalizedQuery) ||
         nameEn.includes(normalizedQuery) ||
         description.includes(normalizedQuery) ||
+        descriptionEn.includes(normalizedQuery) ||
         tags.some((tag) => tag.includes(normalizedQuery))
       );
     });
@@ -77,12 +79,14 @@ export function SearchSection() {
         const name = normalizeText(product.name);
         const nameEn = normalizeText(product.nameEn || '');
         const description = normalizeText(product.description || '');
+        const descriptionEn = normalizeText(product.descriptionEn || '');
         const tags = (product.tags || []).map((tag) => normalizeText(tag));
 
         return (
           name.includes(normalizeText(matchedKeyword)) ||
           nameEn.includes(normalizeText(matchedKeyword)) ||
           description.includes(normalizeText(matchedKeyword)) ||
+          descriptionEn.includes(normalizeText(matchedKeyword)) ||
           tags.some((tag) => tag.includes(normalizeText(matchedKeyword)))
         );
       });
@@ -123,7 +127,6 @@ export function SearchSection() {
         transition={{ duration: 0.8, delay: 0.2 }}
         className="max-w-6xl mx-auto"
       >
-        {/* Search Tabs */}
         <div className="flex justify-center mb-4">
           <div className="inline-flex bg-[#1F1F1F] rounded-t-lg overflow-hidden">
             <button
@@ -164,7 +167,6 @@ export function SearchSection() {
           </div>
         </div>
 
-        {/* Search Box */}
         <div className="glass rounded-b-lg rounded-tl-lg p-6">
           {searchType === 'product' && (
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -210,7 +212,7 @@ export function SearchSection() {
                 </SelectTrigger>
                 <SelectContent className="bg-[#1F1F1F] border-white/10">
                   {selectedBrand &&
-                    carModels[selectedBrand]?.map((model) => (
+                    carModels[selectedBrand]?.map((model: string) => (
                       <SelectItem key={model} value={model} className="text-right">
                         {model}
                       </SelectItem>
@@ -240,14 +242,16 @@ export function SearchSection() {
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                {commonProblems.map((problem) => (
+                {commonProblems.map((problem: any) => (
                   <button
                     key={problem.id}
                     onClick={() => handleProblemClick(problem.name)}
                     className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-lg hover:bg-[#DC2626]/20 hover:border-[#DC2626]/50 border border-transparent transition-all"
                   >
                     <span className="text-2xl">🔧</span>
-                    <span className="text-sm text-white/80 text-center">{problem.name}</span>
+                    <span className="text-sm text-white/80 text-center">
+                      {isArabic ? problem.name : problem.nameEn || problem.name}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -311,7 +315,6 @@ export function SearchSection() {
             </div>
           )}
 
-          {/* Search Button */}
           <div className="mt-4 flex justify-center">
             <Button size="lg" className="btn-primary px-12" onClick={handleSearch}>
               <Search className="w-5 h-5 mr-2" />
@@ -320,7 +323,6 @@ export function SearchSection() {
           </div>
         </div>
 
-        {/* Selected Car Info */}
         {selectedCar && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}

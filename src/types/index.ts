@@ -237,6 +237,15 @@ export interface Subcategory {
   productCount: number;
 }
 
+// Common Problem Types
+export interface CommonProblem {
+  id: string;
+  name: string;
+  nameEn?: string;
+  icon: string;
+  category: string;
+}
+
 // Search Types
 export interface SearchFilters {
   query?: string;
